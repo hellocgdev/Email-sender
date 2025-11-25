@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talrn Email Automation</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 950px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; color: #333; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { color: #2c3e50; border-bottom: 3px solid #4361ee; padding-bottom: 10px; margin-top: 0; }
+        
+        /* TABS */
+        .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 25px; }
+        .tab-btn { padding: 12px 25px; cursor: pointer; border: none; background: none; font-size: 16px; font-weight: 600; color: #7f8c8d; transition: all 0.3s; }
+        .tab-btn:hover { color: #4361ee; background-color: #f8f9fa; }
+        .tab-btn.active { border-bottom: 3px solid #4361ee; color: #4361ee; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* FORMS */
+        label { display: block; margin-top: 18px; font-weight: 600; color: #34495e; font-size: 14px; }
+        input, textarea, select { width: 100%; padding: 12px; margin-top: 6px; border: 1px solid #dcdcdc; border-radius: 6px; box-sizing: border-box; font-size: 14px; transition: border 0.2s; }
+        input:focus, textarea:focus { border-color: #4361ee; outline: none; box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1); }
+        
+        /* BUTTONS */
+        .btn-group { margin-top: 30px; display: flex; gap: 12px; }
+        button { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; transition: transform 0.1s, background 0.2s; }
+        button:active { transform: scale(0.98); }
+        .btn-primary { background-color: #4361ee; color: white; box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2); }
+        .btn-primary:hover { background-color: #304ffe; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-danger { background-color: #ef476f; color: white; }
+        .btn-danger:hover { background-color: #d63056; }
+        
+        /* STATUS BAR */
+        #status { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; font-weight: 500; font-size: 14px; }
+        .success { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .error { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+
+        /* MODAL (STATS) */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 0; border: 1px solid #888; width: 90%; max-width: 800px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: slideDown 0.3s; }
+        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { margin: 0; color: #2c3e50; }
+        .close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: #000; }
+        .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
+        
+        /* TABLE */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background-color: #f8f9fa; color: #555; font-weight: 600; position: sticky; top: 0; }
+        tr:hover { background-color: #f9f9f9; }
+        .status-pill { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .status-success { background-color: #d1e7dd; color: #0f5132; }
+        .status-failed { background-color: #f8d7da; color: #842029; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>⚡ Talrn Email Automation</h2>
+    
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('bulk')">Bulk Send</button>
+        <button class="tab-btn" onclick="openTab('merge')">Mail Merge</button>
+    </div>
+
+    <!-- BULK SEND TAB -->
+    <div id="bulk" class="tab-content active">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px;">
+            <div>
+                <label>Recipients (comma separated):</label>
+                <input type="text" id="recipients" placeholder="client1@example.com, client2@example.com">
+            </div>
+            <div>
+                <label>CC:</label>
+                <input type="text" id="cc" placeholder="manager@example.com">
+            </div>
+            <div>
+                <label>BCC:</label>
+                <input type="text" id="bcc" placeholder="archive@example.com">
+            </div>
+        </div>
+
+        <label>Reply-To (Optional):</label>
+        <input type="email" id="reply_to" placeholder="cr@talrn.com">
+
+        <label>Subject:</label>
+        <input type="text" id="subject" placeholder="Project Proposal for Talrn...">
+        
+        <label>Email Body (HTML Supported):</label>
+        <textarea id="email_body" rows="12" placeholder="Paste your HTML code here..."></textarea>
+        
+        <div style="margin-top: 15px; display: flex; align-items: center;">
+            <input type="checkbox" id="is_html" checked style="width: auto; margin-right: 8px; margin-top: 0;">
+            <label for="is_html" style="margin-top: 0; cursor: pointer;">Send as HTML</label>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-primary" onclick="sendBulkEmail()">🚀 Send Bulk Emails</button>
+            <button class="btn-secondary" onclick="previewEmail()">👁️ Preview</button>
+        </div>
+    </div>
+
+    <!-- MAIL MERGE TAB -->
+    <div id="merge" class="tab-content">
+        <label>Upload CSV / Excel File:</label>
+        <input type="file" id="merge_file" accept=".csv, .xlsx" style="padding: 8px;">
+        <div style="font-size: 12px; color: #888; margin-top: 5px;">Supported columns: email, name, company</div>
+
+        <label>Reply-To (Optional):</label>
+        <input type="email" id="merge_reply_to" placeholder="cr@talrn.com">
+
+        <div style="margin-top: 15px; display: flex; align-items: center;">
+            <input type="checkbox" id="fuzzy_match" style="width: auto; margin-right: 8px; margin-top: 0;">
+            <label for="fuzzy_match" style="margin-top: 0; cursor: pointer;">Enable Fuzzy Matching (Company Names)</label>
+        </div>
+        
+        <label>Template Subject:</label>
+        <input type="text" id="merge_subject" placeholder="Hello {name} from {company}...">
+
+        <label>Template Body:</label>
+        <textarea id="merge_body" rows="10" placeholder="Hi {name}, I saw {company} is hiring..."></textarea>
+
+        <div class="btn-group">
+            <button class="btn-primary" onclick="alert('Mail Merge logic requires full backend implementation.')">🚀 Start Mail Merge</button>
+        </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div id="status"></div>
+
+    <!-- CONTROLS -->
+    <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+        <h3 style="margin-top: 0; font-size: 18px; color: #555;">Analytics & Controls</h3>
+        <div class="btn-group" style="margin-top: 15px;">
+            <button class="btn-secondary" onclick="fetchStats()">📊 View Statistics</button>
+            <button class="btn-danger" onclick="clearQueue()">🛑 Stop Queue</button>
+        </div>
+    </div>
+</div>
+
+<!-- STATS MODAL POPUP -->
+<div id="statsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📧 Sending Log</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="statsTableContainer">Loading data...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- TAB LOGIC ---
+    function openTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // --- STATUS HELPER ---
+    function showStatus(msg, type) {
+        const el = document.getElementById('status');
+        el.style.display = 'block';
+        el.className = type === 'success' ? 'success' : 'error';
+        el.innerText = (type === 'success' ? '✅ ' : '❌ ') + msg;
+        
+        if(type === 'success') setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // --- SEND BULK ---
+    async function sendBulkEmail() {
+        const recipients = document.getElementById('recipients').value;
+        const subject = document.getElementById('subject').value;
+        const body = document.getElementById('email_body').value;
+        const isHtml = document.getElementById('is_html').checked;
+        const replyTo = document.getElementById('reply_to').value; // Capture Reply-To
+
+        if(!recipients) return showStatus("Please enter at least one recipient.", "error");
+
+        showStatus("Queueing emails...", "success");
+
+        try {
+            const response = await fetch('http://localhost:5000/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    recipients: recipients,
+                    subject: subject,
+                    email_body: body,
+                    is_html: isHtml,
+                    reply_to: replyTo // Send to backend
+                })
+            });
+            
+            const data = await response.json();
+            const successMsg = data.msg || data.message || data.status || "Emails queued!";
+            showStatus(successMsg, "success");
+            
+        } catch (e) {
+            showStatus("Connection Error: " + e.message, "error");
+        }
+    }
+
+    // --- PREVIEW ---
+    function previewEmail() {
+        const body = document.getElementById('email_body').value;
+        if(!body) return alert("Enter some email body text first!");
+        const win = window.open("", "Preview", "width=600,height=700");
+        win.document.write(body);
+    }
+    
+    // --- FETCH STATS (MODAL) ---
+    async function fetchStats() {
+        const modal = document.getElementById('statsModal');
+        const container = document.getElementById('statsTableContainer');
+        
+        modal.style.display = "block";
+        container.innerHTML = "<p>Fetching latest data...</p>";
+
+        try {
+            const response = await fetch('http://localhost:5000/stats');
+            const stats = await response.json();
+
+            if (!stats || stats.length === 0) {
+                container.innerHTML = "<p style='text-align:center; color:#888;'>No emails have been sent yet.</p>";
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Recipient</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            stats.slice().reverse().forEach(s => {
+                const date = new Date(s.timestamp * 1000).toLocaleString();
+                const statusClass = s.status === 'Success' ? 'status-success' : 'status-failed';
+                const pillClass = s.status === 'Success' ? 'status-success' : 'status-failed';
+                
+                html += `<tr>
+                    <td>${date}</td>
+                    <td>${s.recipient}</td>
+                    <td>${s.subject || '-'}</td>
+                    <td><span class="status-pill ${pillClass}">${s.status}</span></td>
+                </tr>`;
+            });
+            
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+
+        } catch (e) {
+            container.innerHTML = `<p style="color:red; text-align:center;">Error loading stats: ${e.message}</p>`;
+        }
+    }
+
+    // --- MODAL LOGIC ---
+    function closeModal() {
+        document.getElementById('statsModal').style.display = "none";
+    }
+    
+    window.onclick = function(event) {
+        const modal = document.getElementById('statsModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function clearQueue() {
+        if(confirm("Clear local view? (Server queue must be cleared by restarting backend)")) {
+            location.reload();
+        }
+    }
+</script>
+
+</body>
+</html>
